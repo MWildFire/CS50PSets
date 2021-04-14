@@ -1,74 +1,70 @@
 #include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
 #include <cs50.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
+int encipher(string plaintext, int key);
+int test_arguments(int arguments, string key[]);
 
 int main(int argc, string argv[])
 {
-    if (argc == 2)
+    int test = test_arguments(argc, argv);
+    if (test)
     {
-        char *endp;
-        long lkey;
-        int errno = 0;
+        return test;
+    }
+    else
+    {
+        string plaintext = get_string("plaintext: ");
+        int key = atoi(argv[1]);
+        return encipher(plaintext, key);
+    }
+}
 
-        lkey = strtol(argv[1], &endp, 10);
-        if ((errno != 0) || (*argv[1] == 0) || (*endp != 0) || (lkey < 0) || (((int) lkey) != lkey) || argc >= 3)
-
-            // this statement check to see the characters on argv[1] are all digits
+int test_arguments(int arguments, string key[])
+{
+    if (arguments != 2)
+    {
+        printf("Usage: ./substitution key.\n");
+        return 1;
+    }
+    for (int i = 0, n = strlen(key[1]); i < n; i++)
+    {
+        if (isalpha(key[1][i]))
         {
+            printf("Usage: ./caesar key.\n");
             return 1;
-            printf("Usage: ./caesar key\n");
         }
-        else // if the argv[1] is all digits then prompts the user for a plaintext
+    }
+    return 0;
+}
+
+int encipher(string plaintext, int key)
+{
+    printf("ciphertext: ");
+    char ci;
+    int n = strlen(plaintext);
+    char ciphertext[n];
+    for (int i = 0; i < n; i++)
+    {
+        int c = plaintext[i];
+
+        if (isalpha(c))
         {
-            int key = atoi(argv[1]); // converts the key into an integer
-
-            string plaintext = get_string("plaintext: ");
-            printf("ciphertext: ");
-
-            for (int i = 0, n = strlen(plaintext); i < n; i++)
-
-                // goes thru each of the chars in plaintext and determines if is uppercase, lowercase or none.
+            ci = c + key % 26;
+            bool test_boundaries = islower(ci) || isupper(ci);
+            if (!test_boundaries)
             {
-                if (isupper(plaintext[i]))
-                {
-                    printf("%c", (((plaintext[i] + key) - 65) % 26) + 65);
-
-                    // it takes 65 and then sums it back to convert the character from the ASCII uppercase index and back
-                }
-
-                else if (islower(plaintext[i]))
-                {
-                    printf("%c", (((plaintext[i] + key) - 97) % 26) + 97);
-
-                    // if the case is lower it takes 97 and then adds 97 back just to maintain the ASCII index.
-                }
-
-                else // if it not a lower case nor an uppercase, which means is a symbol then leave it like that.
-                {
-                    printf("%c", plaintext[i]);
-                }
+                ci -= 26;
             }
-            printf("\n");
-            return 0;
         }
+        else
+        {
+            ci = c;
+        }
+        ciphertext[i] = ci;
     }
-
-    else if (argc == 1) // if the user doesnt prompt a key print no key to user
-    {
-        printf("NO KEY\n");
-        return 1;
-    }
-
-    else if (argc >= 3) // if user prompts 3 or more keys into argv then prints error message regargind the usage
-    {
-        printf("Usage: ./caesar key\n");
-        return 1;
-    }
-    else {
-        printf("Usage: ./caesar key\n");
-        return 1;
-    }
+    printf("%s\n", ciphertext);
+    return 0;
 }

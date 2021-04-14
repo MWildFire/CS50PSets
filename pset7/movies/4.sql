@@ -1,3 +1,7 @@
-SELECT COUNT(title) FROM movies
-JOIN ratings on movies.id = ratings.movie_id
-WHERE rating = 10;
+SELECT COUNT(title)
+FROM movies
+WHERE id IN(
+        SELECT movie_id
+        FROM ratings
+        WHERE rating LIKE "10.0"
+    )

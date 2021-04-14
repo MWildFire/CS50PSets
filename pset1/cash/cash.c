@@ -2,21 +2,42 @@
 #include <math.h>
 #include <cs50.h>
 
-int main()
-{
-    int cents_owed;
+float dollars;
+int coins = 0;
 
+int main(void)
+{
+    //Prompt user for Cash owed and keep doing it until a positive number received
     do
     {
-        float dollars_owed = get_float("Change owed: ");
-        cents_owed = round(dollars_owed * 100);
+        dollars = get_float("Cash owed: ");
     }
-    while (cents_owed <= 0);
+    while (dollars <= 0);
 
-    int quarters = cents_owed / 25;
-    int dimes = (cents_owed % 25) / 10;
-    int nickels = ((cents_owed % 25) % 10) / 5;
-    int pennies = ((cents_owed % 25) % 10) % 5;
+    //Round the cents to the nearest penny
+    int cents = round(dollars * 100);
 
-    printf("%d\n", quarters + dimes + nickels + pennies);
+    //Iterate deducting the values from the bigger to the smaller
+    while (cents > 0)
+    {
+        if (cents >= 25)
+        {
+            cents -= 25;
+        }
+        else if (cents >= 10)
+        {
+            cents -= 10;
+        }
+        else if (cents >= 5)
+        {
+            cents -= 5;
+        }
+        else
+        {
+            cents --;
+        }
+        coins++;
+    }
+    //Print the minimal amount of coins
+    printf("%i\n", coins);
 }

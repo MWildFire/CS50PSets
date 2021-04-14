@@ -1,2 +1,3 @@
-SELECT title FROM movies
-WHERE year = 2008;
+SELECT title
+FROM movies
+WHERE year LIKE "2008"

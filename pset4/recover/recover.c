@@ -3,65 +3,48 @@
 
 int main(int argc, char *argv[])
 {
-    // check if the namefile was specified
-    if (argc != 2)
+    if (argc < 2)
     {
-        fprintf(stderr, "Usage: ./recover image\n");
+        printf("Usage: ./recover image");
         return 1;
     }
-
-    // check if memory card is successfully opened
-    FILE *file = fopen(argv[1], "r");
-    if (file == NULL)
+    FILE *card = fopen(argv[1], "r");
+    unsigned char *buffer = malloc(512);
+    if (buffer == NULL)
     {
-        fprintf(stderr, "Could not open file %s.\n", argv[1]);
         return 1;
     }
+    char *filename = malloc(3 * sizeof(int));
+    int photoCount = 0;
 
-    //create vars that we gonna use and allocate memory for them
-    FILE *img;
-    char filename[7];
-    unsigned char *bf = malloc(512);
-    int counter = 0;
-
-    while (fread(bf, 512, 1, file))
+    while (fread(buffer, sizeof(unsigned char), 512, card) == 512)
     {
-        // new jpg file found
-        if (bf[0] == 0xff && bf[1] == 0xd8 && bf[2] == 0xff && (bf[3] & 0xf0) == 0xe0)
+        if (buffer[0] == 0xff && buffer[1] == 0xd8 && buffer[2] == 0xff && (buffer[3] & 0xf0) == 0xe0)
         {
-            // close previous jpg file if it exists
-            if (counter > 0)
+            if (photoCount == 1)
             {
-                fclose(img);
+                sprintf(filename, "%03i.jpg", photoCount);
+                FILE *imageFile = fopen(filename, "w");
+                fwrite(buffer, 1, 512, imageFile);
+                fclose(imageFile);
             }
-
-            // create filename
-            sprintf(filename, "%03d.jpg", counter);
-            // open new image file
-            img = fopen(filename, "w");
-
-            // check if jpg file is successfully created
-            if (img == NULL)
+            else
             {
-                fclose(file);
-                free(bf);
-                fprintf(stderr, "Could not create output JPG %s", filename);
-                return 3;
+                sprintf(filename, "%03i.jpg", photoCount);
+                FILE *imageFile = fopen(filename, "w");
+                fwrite(buffer, 1, 512, imageFile);
+                fclose(imageFile);
             }
-
-            counter++;
+            photoCount++;
+        }
+        else if (photoCount != 0)
+        {
+            FILE *imageFile = fopen(filename, "a");
+            fwrite(buffer, 1, 512, imageFile);
+            fclose(imageFile);
         }
 
-        //if any jpg file exists writes on the file currently opened
-        if (counter > 0)
-        {
-            fwrite(bf, 512, 1, img);
-        }
     }
-
-    //frees memory and closes files
-    fclose(img);
-    fclose(file);
-    free(bf);
-    return 0;
+    free(buffer);
+    printf("contagem = %i\n", photoCount);
 }
